@@ -78,13 +78,6 @@
     self.rangedMax = max;
 }
 
--(void)setEnabled:(NSNumber *)enabled
-{
-    [super setEnabled:enabled];
-
-    [self setManualControlKey];
-}
-
 -(void)calculateCurrentLevel
 {
     if (self.enabled.boolValue) {
@@ -143,8 +136,6 @@
 
         //NSLog(@"Will update fan speed for '%@'", self.output.name);
 
-        [self setManualControlKey];
-
         if (_currentLevel) {
             if (self.output.engine.isRunningOnMac) {
                 // Write fan min key this will force SMC to set fan speed to our desired speed
@@ -152,6 +143,7 @@
             }
             else {
                 // Write target speed key
+                [self setManualControlKey];
                 [SmcHelper privilegedWriteNumericKey:[NSString stringWithFormat:@KEY_FORMAT_FAN_TARGET, ((HWMSmcFanSensor*)self.output).number.unsignedCharValue] value:_currentLevel.output];
             }
         }

@@ -91,7 +91,7 @@ u16 nouveau_dcb_table(struct nouveau_device *device, u8 *ver, u8 *hdr, u8 *cnt, 
     
 	*ver = nv_ro08(device, dcb);
     
-	if (*ver >= 0x41) {
+	if (*ver >= 0x42) {
 		nv_warn(device, "DCB *ver 0x%02x unknown\n", *ver);
 		return 0x0000;
 	} else
@@ -183,6 +183,7 @@ int nouveau_bios_score(struct nouveau_device *device, const bool writeable)
 	}
     
 	nv_debug(device, "VBIOS appears to be valid\n");
+
 	return 3;
 }
 

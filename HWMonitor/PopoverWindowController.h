@@ -8,13 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "SensorsViewController.h"
-
 @class PopoverController;
 
-@interface PopoverWindowController : NSWindowController <SensorsViewControllerDelegate>
+@interface PopoverWindowController : NSWindowController
 
-@property (nonatomic, weak) IBOutlet PopoverController *popoverController;
+@property (assign) IBOutlet PopoverController *popoverController;
+
 @property (assign) IBOutlet NSWindowController *appController;
 @property (assign) IBOutlet NSWindowController *graphsController;
 @property (assign) IBOutlet NSWindowController *aboutController;

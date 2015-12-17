@@ -71,13 +71,15 @@
 
 #pragma mark - Overridden Methods
 
--(id)init
+-(instancetype)init
 {
     self = [self initWithNibName:NSStringFromClass([SensorsViewController class]) bundle:[NSBundle mainBundle]];
 
     if (self) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [(JLNFadingScrollView *)self.scrollView setFadeColor:self.monitorEngine.configuration.colorTheme.listBackgroundColor];
+            if ([self.scrollView isKindOfClass:[JLNFadingScrollView class]]) {
+                [(JLNFadingScrollView *)self.scrollView setFadeColor:self.monitorEngine.configuration.colorTheme.listBackgroundColor];
+            }
 
             [_tableView registerForDraggedTypes:[NSArray arrayWithObject:kHWMonitorPopupItemDataType]];
             [_tableView setDraggingSourceOperationMask:NSDragOperationMove | NSDragOperationDelete forLocal:YES];
@@ -113,14 +115,17 @@
 
             _sensorsAndGroupsCollectionSnapshot = nil;
 
-            [_tableView updateWithObjectValues:self.sensorsAndGroupsCollectionSnapshot previousObjectValues:oldSensorsAndGroups];
+        CGFloat previousContentHeight = _contentHeight;
+        _contentHeight = 0;
 
-            _contentHeight = 0;
+        if ([_tableView updateWithObjectValues:self.sensorsAndGroupsCollectionSnapshot previousObjectValues:oldSensorsAndGroups] ||
+            previousContentHeight != self.contentHeight) {
 
             if (self.delegate && [self.delegate respondsToSelector:@selector(sensorsViewControllerDidReloadData:)]) {
                 [self.delegate sensorsViewControllerDidReloadData:self];
             }
-            
+        }
+
         //NSLog(@"ended reloading data");
         //});
     }];
@@ -131,9 +136,12 @@
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if ([keyPath isEqual:@keypath(self, monitorEngine.configuration.colorTheme)]) {
-        [(JLNFadingScrollView *)self.scrollView setFadeColor:self.monitorEngine.configuration.colorTheme.listBackgroundColor];
+        if ([self.scrollView isKindOfClass:[JLNFadingScrollView class]]) {
+            [(JLNFadingScrollView *)self.scrollView setFadeColor:self.monitorEngine.configuration.colorTheme.listBackgroundColor];
+        }
     }
-    else if ([keyPath isEqual:@keypath(self, monitorEngine.configuration.showSensorLegendsInPopup)] || [keyPath isEqual:@keypath(self, monitorEngine.sensorsAndGroups)]) {
+    else if ([keyPath isEqual:@keypath(self, monitorEngine.configuration.showSensorLegendsInPopup)] ||
+             [keyPath isEqual:@keypath(self, monitorEngine.sensorsAndGroups)]) {
         [self reloadData];
     }
 }

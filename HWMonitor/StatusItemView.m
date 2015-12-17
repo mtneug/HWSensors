@@ -41,6 +41,7 @@
 }
 @property (readonly) NSAttributedString *spacer;
 @property (readonly) NSArray *favoritesSnapshot;
+@property (readonly) BOOL isDrawsOnDarkBackground;
 
 @end
 
@@ -95,15 +96,12 @@
 #pragma mark -
 #pragma mark Override
 
--(id)initWithFrame:(NSRect)rect statusItem:(NSStatusItem *)statusItem;
+-(instancetype)initWithFrame:(NSRect)rect statusItem:(NSStatusItem *)statusItem;
 {
     self = [super initWithFrame:rect];
 
     if (self && statusItem) {
         _statusItem = statusItem;
-
-        _smallFont = [NSFont fontWithName:@"Lucida Grande Bold" size:9.0];
-        _bigFont = [NSFont fontWithName:@"Lucida Grande" size:13.9];
 
         _shadow = [[NSShadow alloc] init];
 
@@ -119,9 +117,7 @@
 
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redraw) name:HWMEngineSensorValuesHasBeenUpdatedNotification object:self.monitorEngine];
             
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(userDefaultsDidChangeNotification:) name:NSUserDefaultsDidChangeNotification object:nil];
-            
-            [self userDefaultsDidChangeNotification:nil];
+            [self currentAppearanceChanged];
         }];
     }
 
@@ -137,16 +133,30 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void)userDefaultsDidChangeNotification:(NSNotification*)notification
+
+-(void)currentAppearanceChanged
 {
-    _darkThemeColors = [[NSUserDefaults standardUserDefaults] boolForKey:@"MenubarUsesInvertedColors"];
+//    _smallFont = [NSFont fontWithName:_darkThemeColors ? @"HelveticaNeue-Light" : @"HelveticaNeue" size:9.0];
+//    _bigFont = [NSFont fontWithName:_darkThemeColors ? @"HelveticaNeue" : @"HelveticaNeue-Medium" size:13.9];
+    _smallFont = _darkThemeColors ? [NSFont systemFontOfSize:9.0] : [NSFont boldSystemFontOfSize:9.0];
+    _bigFont = _darkThemeColors ? [NSFont systemFontOfSize:14.9] : [NSFont systemFontOfSize:14.9];
     [_shadow setShadowColor:[NSColor colorWithCalibratedWhite:_darkThemeColors ? 0.0 : 1.0 alpha:0.50]];
-    [self redraw];
 }
 
 - (void)drawRect:(NSRect)rect
 {
     //[_statusItem drawStatusBarBackgroundInRect:rect withHighlight:_isHighlighted];
+
+    BOOL darkThemeColors = NO;
+
+    if ([NSAppearance class]) {
+        darkThemeColors = [NSAppearance currentAppearance].name == NSAppearanceNameVibrantDark;
+    }
+
+    if (darkThemeColors != _darkThemeColors) {
+        _darkThemeColors = darkThemeColors;
+        [self currentAppearanceChanged];
+    }
 
     CGContextRef cgContext = [[NSGraphicsContext currentContext] graphicsPort];
 
@@ -200,7 +210,7 @@
             }
 
             [[NSGraphicsContext currentContext] saveGraphicsState];
-
+            CGContextSetShouldAntialias([[NSGraphicsContext currentContext] graphicsPort], YES);
             
             NSImage *image = _darkThemeColors ? icon.alternate : icon.regular;
 
@@ -248,6 +258,7 @@
             [title addAttribute:NSForegroundColorAttributeName value:valueColor range:NSMakeRange(0,title.length)];
 
             [[NSGraphicsContext currentContext] saveGraphicsState];
+            CGContextSetShouldSmoothFonts([[NSGraphicsContext currentContext] graphicsPort], YES);
 
             if (/*!_isHighlighted &&*/ self.monitorEngine.configuration.useShadowEffectsInMenubar.boolValue) {
                 [_shadow set];
@@ -313,9 +324,9 @@
 
 -(void)redraw
 {
-    if (!self.monitorEngine || !self.favoritesSnapshot.count) {
-        return;
-    }
+//    if (!self.monitorEngine || !self.favoritesSnapshot.count) {
+//        return;
+//    }
 
     [self setNeedsDisplay:YES];
 }

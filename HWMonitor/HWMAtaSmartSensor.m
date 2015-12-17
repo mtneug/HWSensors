@@ -978,11 +978,12 @@ static io_iterator_t gHWMAtaSmartDeviceIterator = 0;
 
 -(BOOL)findIndexOfAttributeByName:(NSString*)name outIndex:(NSInteger*)index
 {
-    NSArray *results = [_attributes filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"name = %@", name]];
+    NSPredicate * predicate = [NSPredicate predicateWithFormat:@"name = %@", name];
+    *index = [_attributes indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+        return [predicate evaluateWithObject:obj];
+    }];
 
-    *index = results && results.count ? [[results objectAtIndex:0][@"index"] unsignedIntegerValue] : -1;
-
-    return *index > -1;
+    return *index != NSNotFound;
 }
 
 -(void)updateVolumeNames
@@ -1044,7 +1045,11 @@ static io_iterator_t gHWMAtaSmartDeviceIterator = 0;
     if (!self.attributes || _remainingLifeAttributeIndex >= self.attributes.count)
         return nil;
 
-    return [self.attributes objectAtIndex:_remainingLifeAttributeIndex][@"value"];
+    NSDictionary * attributeInfo = [self.attributes objectAtIndex:_remainingLifeAttributeIndex];
+    NSNumber * thresold = attributeInfo[@"threshold"];
+    NSNumber * value = attributeInfo[@"value"];
+
+    return thresold.integerValue == 100 && value.integerValue >= 100 ? @(value.integerValue - 100) : value;
 }
 
 -(NSUInteger)internalUpdateAlarmLevel

@@ -195,7 +195,7 @@
 		7EB7E70A17834A740071B3F0 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0640;
 			};
 			buildConfigurationList = 7EB7E70D17834A740071B3F0 /* Build configuration list for PBXProject "Versioning And Distribution" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -563,12 +563,15 @@
 		7EB7E70E17834A740071B3F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};
 		7EB7E70F17834A740071B3F0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 			};
 			name = Release;
 		};

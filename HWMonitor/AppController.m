@@ -30,6 +30,7 @@
 #import "HWMonitorDefinitions.h"
 
 #import "PopupGroupCell.h"
+#import "PopupSensorCell.h"
 #import "PrefsCell.h"
 #import "PrefsToolbarItem.h"
 
@@ -41,7 +42,7 @@
 #import "HWMIcon.h"
 #import "HWMSensor.h"
 #import "HWMBatterySensor.h"
-
+#import "NSImage+HighResolutionLoading.h"
 #import "NSTableView+HWMEngineHelper.h"
 
 @implementation AppController
@@ -65,7 +66,7 @@
         
         [self.monitorEngine.configuration.colorThemes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             NSString *path = [NSString stringWithFormat:@"theme_%@", [obj name]];
-            NSImage *preview = [NSImage imageNamed:[path lowercaseString]];
+            NSImage *preview = [NSImage loadImageNamed:[path lowercaseString] ofType:@"png"];
             
             [_themePreview addObject:@{@"name"    : GetLocalizedString([obj name]),
                                  @"preview" : preview}];
@@ -122,7 +123,7 @@
 #pragma mark
 #pragma mark Overrides:
 
-- (id)init
+- (instancetype)init
 {
     self = [super initWithWindowNibName:NSStringFromClass([AppController class])];
     
@@ -248,22 +249,6 @@
     }
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    [GrowlApplicationBridge setGrowlDelegate:self];
-
-    [self.monitorEngine setDelegate:self];
-
-    [self.monitorEngine open];
-    [self.monitorEngine start];
-}
-
--(void)applicationWillTerminate:(NSNotification *)notification
-{
-    //[self removeObserver:self forKeyPath:@keypath(self, monitorEngine.favorites)];
-    //[self removeObserver:self forKeyPath:@keypath(self, monitorEngine.iconsWithSensorsAndGroups)];
-}
-
 - (IBAction)sensorHiddenFlagChanged:(id)sender
 {
     [self.monitorEngine setNeedsUpdateLists];
@@ -341,6 +326,27 @@
         //} completionHandler:nil];
     }];
 }
+#pragma mark
+#pragma mark NSApplicationDelegate
+
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    // Growl
+    [GrowlApplicationBridge setGrowlDelegate:self];
+
+    // HWmonitorEngine
+    [self.monitorEngine setDelegate:self];
+
+    [self.monitorEngine open];
+    [self.monitorEngine start];
+}
+
+-(void)applicationWillTerminate:(NSNotification *)notification
+{
+    //[self removeObserver:self forKeyPath:@keypath(self, monitorEngine.favorites)];
+    //[self removeObserver:self forKeyPath:@keypath(self, monitorEngine.iconsWithSensorsAndGroups)];
+}
+
 #pragma mark
 #pragma mark HWMEngineDelegate:
 
